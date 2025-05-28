@@ -2,6 +2,8 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
+import { customSession } from "better-auth/plugins";
+import { eq } from "drizzle-orm";
 
 export const auth = betterAuth({
   socialProviders: {
@@ -13,6 +15,41 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+
+  plugins: [
+    customSession(async ({ user, session }) => {
+      const clinics = await db.query.usersToClinicsTable.findMany({
+        where: eq(schema.usersToClinicsTable.userId, user.id),
+        with: {
+          clinic: true,
+        },
+      });
+
+      // TODO: if needed, we need to change this code for users with multiple clinics
+      const clinic = clinics[0];
+
+      if (!clinic) {
+        return {
+          user: {
+            ...user,
+            clinic: null,
+          },
+          session,
+        };
+      }
+
+      return {
+        user: {
+          ...user,
+          clinic: {
+            id: clinic.clinicId,
+            name: clinic.clinic.name,
+          },
+        },
+        session,
+      };
+    }),
+  ],
 
   database: drizzleAdapter(db, {
     provider: "pg", // or "mysql", "sqlite"
