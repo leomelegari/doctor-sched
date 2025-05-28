@@ -26,25 +26,17 @@ export const auth = betterAuth({
       });
 
       // TODO: if needed, we need to change this code for users with multiple clinics
-      const clinic = clinics[0];
-
-      if (!clinic) {
-        return {
-          user: {
-            ...user,
-            clinic: null,
-          },
-          session,
-        };
-      }
+      const clinic = clinics?.[0];
 
       return {
         user: {
           ...user,
-          clinic: {
-            id: clinic.clinicId,
-            name: clinic.clinic.name,
-          },
+          clinic: clinic.clinicId
+            ? {
+                id: clinic.clinicId,
+                name: clinic.clinic.name,
+              }
+            : undefined,
         },
         session,
       };
