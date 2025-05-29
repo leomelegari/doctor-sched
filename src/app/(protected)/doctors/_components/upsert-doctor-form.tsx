@@ -1,5 +1,5 @@
 import { NumericFormat } from "react-number-format";
-
+import { useAction } from "next-safe-action/hooks";
 import { Button } from "@/components/ui/button";
 import {
   DialogContent,
@@ -31,6 +31,9 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { medicalSpecialties } from "../_constants";
+import { upsertDoctor } from "@/actions/upsert-doctor";
+import { toast } from "sonner";
+import { Loader2Icon } from "lucide-react";
 
 const formSchema = z
   .object({
@@ -43,7 +46,7 @@ const formSchema = z
       .trim()
       .min(3, "A especialidade precisa ter pelo menos 3 caracteres"),
     appointmentPrice: z
-      .number({ message: "O valor da consulta é obrigatório" })
+      .number()
       .min(1, "O valor da consulta precisa ser maior que zero"),
     availableFromWeekDay: z.string({
       message: "O dia da semana de inicio é obrigatório",
@@ -68,7 +71,11 @@ const formSchema = z
     },
   );
 
-const UpsertDoctorForm = () => {
+interface UpsertDoctorFormProps {
+  onSuccess?: () => void;
+}
+
+const UpsertDoctorForm = ({ onSuccess }: UpsertDoctorFormProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -82,8 +89,23 @@ const UpsertDoctorForm = () => {
     },
   });
 
+  const upsertDoctorAction = useAction(upsertDoctor, {
+    onSuccess: () => {
+      toast.success("Médico adicionado com sucesso");
+      onSuccess?.();
+    },
+    onError: () => {
+      toast.error("Ocorreu um erro ao adicionar o médico");
+    },
+  });
+
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    console.log(data);
+    upsertDoctorAction.execute({
+      ...data,
+      availableFromWeekDay: parseInt(data.availableFromWeekDay),
+      availableToWeekDay: parseInt(data.availableToWeekDay),
+      appointmentPriceInCents: data.appointmentPrice * 100,
+    });
   };
 
   return (
@@ -144,22 +166,19 @@ const UpsertDoctorForm = () => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Preço da consulta</FormLabel>
-                <FormControl>
-                  <NumericFormat
-                    {...field}
-                    customInput={Input}
-                    value={field.value}
-                    onValueChange={(value) => field.onChange(value.floatValue)}
-                    className="w-full"
-                    decimalScale={2}
-                    fixedDecimalScale
-                    thousandSeparator="."
-                    decimalSeparator=","
-                    allowNegative={false}
-                    allowLeadingZeros={false}
-                    prefix="R$ "
-                  />
-                </FormControl>
+                <NumericFormat
+                  value={field.value}
+                  onValueChange={(value) => field.onChange(value.floatValue)}
+                  customInput={Input}
+                  className="w-full"
+                  decimalScale={2}
+                  fixedDecimalScale
+                  thousandSeparator="."
+                  decimalSeparator=","
+                  allowNegative={false}
+                  allowLeadingZeros={false}
+                  prefix="R$"
+                />
                 <FormMessage />
               </FormItem>
             )}
@@ -363,7 +382,13 @@ const UpsertDoctorForm = () => {
             )}
           />
           <DialogFooter>
-            <Button>Adicionar</Button>
+            <Button type="submit" disabled={upsertDoctorAction.isPending}>
+              {upsertDoctorAction.isPending ? (
+                <Loader2Icon className="animate-spin" />
+              ) : (
+                "Salvar"
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </Form>
