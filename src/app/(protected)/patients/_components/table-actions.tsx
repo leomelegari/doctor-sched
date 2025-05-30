@@ -3,7 +3,7 @@ import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { toast } from "sonner";
 
-// import { deletePatient } from "@/actions/delete-patient";
+import { deletePatient } from "@/actions/delete-patient";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,19 +36,19 @@ interface PatientsTableActionsProps {
 const PatientsTableActions = ({ patient }: PatientsTableActionsProps) => {
   const [upsertDialogIsOpen, setUpsertDialogIsOpen] = useState(false);
 
-  // const deletePatientAction = useAction(deletePatient, {
-  //   onSuccess: () => {
-  //     toast.success("Paciente deletado com sucesso.");
-  //   },
-  //   onError: () => {
-  //     toast.error("Erro ao deletar paciente.");
-  //   },
-  // });
+  const deletePatientAction = useAction(deletePatient, {
+    onSuccess: () => {
+      toast.success("Paciente deletado com sucesso.");
+    },
+    onError: () => {
+      toast.error("Erro ao deletar paciente.");
+    },
+  });
 
-  // const handleDeletePatientClick = () => {
-  //   if (!patient) return;
-  //   deletePatientAction.execute({ id: patient.id });
-  // };
+  const handleDeletePatientClick = () => {
+    if (!patient) return;
+    deletePatientAction.execute({ id: patient.id });
+  };
 
   return (
     <>
@@ -76,19 +76,22 @@ const PatientsTableActions = ({ patient }: PatientsTableActionsProps) => {
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>
-                    Tem certeza que deseja deletar esse paciente?
+                    Tem certeza que deseja excluir esse paciente?
                   </AlertDialogTitle>
                   <AlertDialogDescription>
-                    Essa ação não pode ser revertida. Isso irá deletar o
+                    Essa ação não pode ser revertida. Isso irá excluir o
                     paciente e todas as consultas agendadas.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                {/* <AlertDialogFooter>
+                <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeletePatientClick}>
-                    Deletar
+                  <AlertDialogAction
+                    className="bg-red-600 hover:bg-red-700"
+                    onClick={handleDeletePatientClick}
+                  >
+                    Excluir
                   </AlertDialogAction>
-                </AlertDialogFooter> */}
+                </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
           </DropdownMenuContent>
