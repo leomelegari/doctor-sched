@@ -14,7 +14,7 @@ interface TopDoctorsProps {
 
 export default function TopDoctors({ topDoctors }: TopDoctorsProps) {
   return (
-    <Card className="mx-auto w-full">
+    <Card className="mx-auto h-[528px] w-full overflow-auto">
       <CardContent>
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">

@@ -59,13 +59,16 @@ export function AppointmentsBarChart({
   } satisfies ChartConfig;
 
   return (
-    <Card>
+    <Card className="h-fit">
       <CardHeader>
         <CardTitle>Agendamentos e Faturamento</CardTitle>
         <CardDescription>Últimos 21 dias</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="min-h-[200px]">
+        <ChartContainer
+          config={chartConfig}
+          className="max-h-[350px] min-h-[200px] w-full"
+        >
           <BarChart data={chartData}>
             <CartesianGrid vertical={false} />
             <XAxis
